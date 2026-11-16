@@ -1,0 +1,5 @@
+{
+  "name": "staging",
+  "baseUrl": "https://example.com",
+  "apiUrl": "https://reqres.in/api"
+}

@@ -4,7 +4,7 @@ export class ExamplePage {
   constructor(private readonly page: Page) {}
 
   async goto() {
-    await this.page.goto('https://example.com');
+    await this.page.goto('/');
   }
 
   async title() {
