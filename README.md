@@ -99,6 +99,29 @@ npx allure open allure-report
 
 Required repository secrets for the email step: `SMTP_USERNAME`, `SMTP_PASSWORD`, `TO_EMAIL`.
 
+### Pipeline overview
+
+```mermaid
+flowchart TD
+    A([Push / Pull request]) --> B[Start job in Playwright container]
+    B --> C[Checkout code]
+    C --> D[Setup Node.js and Java 17]
+    D --> E[npm ci]
+    E --> F[Run Playwright tests]
+    F --> G[Generate Allure report]
+    G --> H[Upload allure-report artifact]
+    H --> I[Send email summary]
+
+    F -. "if: always()" .-> G
+    G -. "if: always()" .-> H
+    H -. "if: always()" .-> I
+
+    classDef always fill:#fff4d6,stroke:#d9a400,color:#333;
+    class G,H,I always;
+```
+
+Steps in yellow use `if: always()`, so the report, artifact and email are produced even when tests fail.
+
 ## License
 
 See [LICENSE](LICENSE).
