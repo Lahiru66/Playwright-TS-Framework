@@ -1,4 +1,5 @@
-import { Locator, Page } from '@playwright/test';
+import { Locator } from '@playwright/test';
+import { BasePage } from './BasePage';
 
 export interface Customer {
   firstName: string;
@@ -6,9 +7,7 @@ export interface Customer {
   postalCode: string;
 }
 
-export class CheckoutPage {
-  constructor(private readonly page: Page) {}
-
+export class CheckoutPage extends BasePage {
   /** Fills the customer information form; missing fields are left blank. */
   async fillInformation(customer: Partial<Customer>) {
     await this.page.getByPlaceholder('First Name').fill(customer.firstName ?? '');
@@ -22,10 +21,6 @@ export class CheckoutPage {
 
   async finish() {
     await this.page.getByRole('button', { name: 'Finish' }).click();
-  }
-
-  errorMessage(): Locator {
-    return this.page.getByTestId('error');
   }
 
   confirmationHeading(): Locator {

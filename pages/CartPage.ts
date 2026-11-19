@@ -1,8 +1,6 @@
-import { Page } from '@playwright/test';
+import { BasePage } from './BasePage';
 
-export class CartPage {
-  constructor(private readonly page: Page) {}
-
+export class CartPage extends BasePage {
   async itemNames(): Promise<string[]> {
     return this.page.getByTestId('inventory-item-name').allTextContents();
   }

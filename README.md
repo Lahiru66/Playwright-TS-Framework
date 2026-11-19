@@ -4,7 +4,7 @@ A Playwright + TypeScript test automation framework covering **UI** and **API** 
 
 ## Features
 
-- Page Object Model with fixtures (`fixtures/index.ts`)
+- Page Object Model with a `BasePage` and fixtures (`fixtures/index.ts`)
 - UI and API specs in one suite
 - Per-environment config (`dev`, `staging`) selected via `TEST_ENV`
 - JSON-driven test data, exported through `test-data/index.ts`
@@ -83,7 +83,7 @@ Failed tests save a screenshot to `test-results/`, plus a trace when retried; bo
 ├── tests/
 │   ├── ui/                 # UI specs (page objects via fixtures)
 │   └── api/                # API specs (request-based, own test data)
-├── pages/                  # Page Object classes
+├── pages/                  # Page Object classes, all extending BasePage
 ├── fixtures/index.ts       # Extended `test` exposing page objects as fixtures
 ├── config/
 │   ├── env.ts              # Loads the active environment config
@@ -96,7 +96,7 @@ Failed tests save a screenshot to `test-results/`, plus a trace when retried; bo
 ## Writing tests
 
 - UI specs live in `tests/ui/` and import `test, expect` from `../../fixtures`; API specs live in `tests/api/` and use the `request` fixture (directly or through a client fixture such as `booker`).
-- Page objects take `page` in the constructor, expose user-intent methods and contain no assertions. Register each one in `fixtures/index.ts`.
+- Page objects extend `BasePage`, expose user-intent methods and contain no assertions. Register each one in `fixtures/index.ts`.
 - Use `getByRole` / `getByLabel` / `getByText` locators first; avoid XPath.
 - No fixed sleeps (`waitForTimeout`). Rely on auto-waiting and web-first assertions.
 - Keep tests independent, since `fullyParallel` is on.

@@ -1,10 +1,8 @@
-import { Locator, Page } from '@playwright/test';
+import { BasePage } from './BasePage';
 
-export class LoginPage {
-  constructor(private readonly page: Page) {}
-
+export class LoginPage extends BasePage {
   async goto() {
-    await this.page.goto('/');
+    await this.open('/');
   }
 
   async login(user: { username: string; password: string }) {
@@ -16,9 +14,5 @@ export class LoginPage {
   /** Submits the form without filling any field. */
   async submitEmpty() {
     await this.page.getByRole('button', { name: 'Login' }).click();
-  }
-
-  errorMessage(): Locator {
-    return this.page.getByTestId('error');
   }
 }

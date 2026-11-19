@@ -1,12 +1,11 @@
-import { Locator, Page } from '@playwright/test';
+import { Locator } from '@playwright/test';
+import { BasePage } from './BasePage';
 
 export type SortOption = 'az' | 'za' | 'lohi' | 'hilo';
 
-export class InventoryPage {
-  constructor(private readonly page: Page) {}
-
+export class InventoryPage extends BasePage {
   async goto() {
-    await this.page.goto('/inventory.html');
+    await this.open('/inventory.html');
   }
 
   title(): Locator {

@@ -14,7 +14,7 @@ Playwright + TypeScript test framework (UI and API), with Allure reporting and a
 ## Layout
 
 - `tests/ui/` and `tests/api/` — `*.spec.ts` files, one folder per test layer
-- `pages/` — Page Object classes
+- `pages/` — Page Object classes; every page extends `BasePage`
 - `fixtures/index.ts` — extends Playwright `test` and exposes page objects as fixtures
 - `config/env.ts` + `config/environments/<name>.json` — per-environment `baseUrl` (Sauce Demo) / `bookingApiUrl` (Restful-Booker), selected by `TEST_ENV`
 - `test-data/` — JSON data, re-exported through `test-data/index.ts`
