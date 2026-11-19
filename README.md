@@ -1,0 +1,104 @@
+# Playwright TS Framework
+
+A Playwright + TypeScript test automation framework covering **UI** and **API** tests, with Allure reporting and a GitHub Actions pipeline.
+
+## Features
+
+- Page Object Model with fixtures (`fixtures/index.ts`)
+- UI and API specs in one suite
+- Per-environment config (`dev`, `staging`) selected via `TEST_ENV`
+- JSON-driven test data, exported through `test-data/index.ts`
+- HTML and Allure reports
+- CI on GitHub Actions using the official Playwright container
+- Chromium-only, fully parallel runs
+
+## Prerequisites
+
+- Node.js (LTS)
+- Java 17 (only needed to generate the Allure report locally)
+
+## Getting started
+
+```bash
+git clone https://github.com/Lahiru66/playwright-ts-framework.git
+cd playwright-ts-framework
+npm ci
+npx playwright install chromium
+```
+
+## Running tests
+
+```bash
+npx playwright test                      # run everything
+npx playwright test tests/ui.spec.ts     # a single file
+npx playwright test --headed             # watch the browser
+npx playwright test --debug              # step through with the inspector
+```
+
+### Choosing an environment
+
+The default environment is `dev`. Set `TEST_ENV` to switch:
+
+```bash
+TEST_ENV=staging npx playwright test
+```
+
+PowerShell:
+
+```powershell
+$env:TEST_ENV='staging'; npx playwright test
+```
+
+An unknown `TEST_ENV` fails fast and lists the available environments.
+
+## Reports
+
+```bash
+npx playwright show-report                                   # HTML report
+npx allure generate allure-results --clean -o allure-report  # Allure report (needs Java)
+npx allure open allure-report
+```
+
+## Project structure
+
+```
+.
+├── tests/                  # *.spec.ts files (UI and API)
+├── pages/                  # Page Object classes
+├── fixtures/index.ts       # Extended `test` exposing page objects as fixtures
+├── config/
+│   ├── env.ts              # Loads the active environment config
+│   └── environments/       # dev.json, staging.json (baseUrl, apiUrl)
+├── test-data/              # JSON data, re-exported via index.ts
+├── playwright.config.ts
+└── .github/workflows/      # CI pipeline
+```
+
+## Writing tests
+
+- UI specs import `test, expect` from `../fixtures`; API specs can use `@playwright/test` with the `request` fixture.
+- Page objects take `page` in the constructor, expose user-intent methods and contain no assertions. Register each one in `fixtures/index.ts`.
+- Use `getByRole` / `getByLabel` / `getByText` locators first; avoid XPath.
+- No fixed sleeps (`waitForTimeout`). Rely on auto-waiting and web-first assertions.
+- Keep tests independent, since `fullyParallel` is on.
+- Put data in `test-data/*.json` and URLs in `config/environments/*.json`. Never hard-code hosts or commit secrets.
+- Don't commit `test.only` or `test.skip`; CI sets `forbidOnly`.
+
+## Adding an environment
+
+1. Copy `config/environments/dev.json` to `config/environments/<name>.json` with the same keys.
+2. Run with `TEST_ENV=<name>`.
+
+## Continuous integration
+
+`.github/workflows/playwright.yml` runs on every push and pull request. It:
+
+1. Runs the suite inside the `mcr.microsoft.com/playwright` container (the tag must match the `@playwright/test` version in `package.json`).
+2. Generates the Allure report and uploads it as the `allure-report` artifact (14-day retention).
+3. Sends an email summary of the run.
+
+Required repository secrets for the email step: `SMTP_USERNAME`, `SMTP_PASSWORD`, `TO_EMAIL`.
+
+## License
+
+See [LICENSE](LICENSE).
