@@ -127,7 +127,7 @@ Steps in yellow use `if: always()`, so the report, artifact, Pages deploy and em
 
 ### Viewing the Allure report
 
-- **In the browser (latest `main` run):** https://lahiru66.github.io/playwright-ts-framework/
+- **In the browser (latest `main` run):** https://lahiru66.github.io/Playwright-TS-Framework/
   One-time setup: repo **Settings → Pages → Source: GitHub Actions**. The report is public because the repo is public.
 - **Any run (including pull requests):** open the run under the **Actions** tab and download the `allure-report` artifact (kept 14 days), then `npx allure open <folder>`.
 
