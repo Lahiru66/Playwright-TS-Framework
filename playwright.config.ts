@@ -14,6 +14,7 @@ export default defineConfig({
     /* Sauce Demo marks test hooks with data-test instead of data-testid. */
     testIdAttribute: 'data-test',
     trace: 'on-first-retry',
+    screenshot: 'only-on-failure',
   },
   /* Chromium only, by design. */
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],

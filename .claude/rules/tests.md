@@ -9,3 +9,4 @@
 - Do not commit `test.only` or `test.skip` (CI sets `forbidOnly`). Use `test.fixme` with a comment for known failures.
 - API tests build URLs from `env.bookingApiUrl` and assert status and body, not just status.
 - Don't add browsers/projects or change reporters without being asked; the suite is intentionally chromium-only.
+- Before pushing, run `npm run typecheck`, `npm run lint` and `npm run format:check` (or `npm run format` to fix); CI fails on any of them.

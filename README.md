@@ -8,7 +8,8 @@ A Playwright + TypeScript test automation framework covering **UI** and **API** 
 - UI and API specs in one suite
 - Per-environment config (`dev`, `staging`) selected via `TEST_ENV`
 - JSON-driven test data, exported through `test-data/index.ts`
-- HTML and Allure reports
+- HTML and Allure reports, with failure screenshots and traces attached
+- Static checks: strict TypeScript, ESLint (with Playwright rules) and Prettier, run in CI
 - CI on GitHub Actions running inside the official Playwright Docker container (`mcr.microsoft.com/playwright`), so browsers and system dependencies match the pinned Playwright version
 - Chromium-only, fully parallel runs
 
@@ -29,15 +30,25 @@ npx playwright install chromium
 ## Running tests
 
 ```bash
-npx playwright test                      # run everything
-npx playwright test tests/ui           # only the UI specs
-npx playwright test tests/api          # only the API specs
+npm test                                 # run everything
+npm run test:smoke                       # smoke suite only
+npm run test:regression                  # regression suite only
+npm run test:ui                          # only the UI specs
+npm run test:api                         # only the API specs
 npx playwright test tests/ui/shop.spec.ts  # a single file
-npx playwright test --grep @smoke        # smoke suite only
-npx playwright test --grep @regression   # regression suite only
 npx playwright test --headed             # watch the browser
 npx playwright test --debug              # step through with the inspector
 ```
+
+### Code quality
+
+```bash
+npm run typecheck      # TypeScript, strict mode
+npm run lint           # ESLint (typescript-eslint + eslint-plugin-playwright)
+npm run format:check   # Prettier check (use `npm run format` to fix)
+```
+
+CI runs all three in a `lint` job alongside the tests.
 
 ### Choosing an environment
 
@@ -58,10 +69,12 @@ An unknown `TEST_ENV` fails fast and lists the available environments.
 ## Reports
 
 ```bash
-npx playwright show-report                                   # HTML report
-npx allure generate allure-results --clean -o allure-report  # Allure report (needs Java)
-npx allure open allure-report
+npm run report            # HTML report
+npm run allure:generate   # Allure report (needs Java)
+npm run allure:open
 ```
+
+Failed tests save a screenshot to `test-results/`, plus a trace when retried; both are attached to the Allure report. In CI they are also uploaded as `failure-evidence-<suite>` artifacts. Open a trace with `npx playwright show-trace <trace.zip>`.
 
 ## Project structure
 
@@ -99,10 +112,11 @@ npx allure open allure-report
 
 `.github/workflows/playwright.yml` runs on every push and pull request. It:
 
-1. Runs the **smoke** and **regression** suites as two parallel jobs, each inside the `mcr.microsoft.com/playwright` container (the tag must match the `@playwright/test` version in `package.json`). A guard step fails the build if any test is missing a `@smoke` or `@regression` tag.
-2. Merges both suites' results into one Allure report and uploads it as the `allure-report` artifact (14-day retention).
-3. On `main`, publishes the Allure report to GitHub Pages so it can be opened in the browser (see below).
-4. Sends an email summary of the run, including the report link.
+1. Runs typecheck, ESLint and a Prettier check in a `lint` job, in parallel with the tests.
+2. Runs the **smoke** and **regression** suites as two parallel jobs, each inside the `mcr.microsoft.com/playwright` container (the tag must match the `@playwright/test` version in `package.json`). A guard step fails the build if any test is missing a `@smoke` or `@regression` tag.
+3. Merges both suites' results into one Allure report and uploads it as the `allure-report` artifact (14-day retention).
+4. On `main`, publishes the Allure report to GitHub Pages so it can be opened in the browser (see below).
+5. Sends an email summary of the run, including the report link.
 
 Required repository secrets for the email step: `SMTP_USERNAME`, `SMTP_PASSWORD`, `TO_EMAIL`.
 
@@ -112,6 +126,7 @@ Required repository secrets for the email step: `SMTP_USERNAME`, `SMTP_PASSWORD`
 flowchart TD
     A([Push / Pull request]) --> S
     A --> R
+    A --> L[Lint job: typecheck, ESLint, Prettier]
 
     subgraph S [smoke job - parallel]
         direction TD
@@ -128,12 +143,13 @@ flowchart TD
     M --> H[Upload allure-report artifact]
     H --> J[Deploy report to GitHub Pages - main only]
     J --> I[Send email summary]
+    L --> I
 
     classDef always fill:#fff4d6,stroke:#d9a400,color:#333;
     class M,H,J,I always;
 ```
 
-Both test jobs run inside the Playwright Docker container. Steps in yellow use `if: always()`, so the merged report, artifact, Pages deploy and email happen even when tests fail. The workflow defines four jobs: `test` (a matrix that produces the smoke and regression jobs), `report`, `deploy-report` and `notify`.
+Both test jobs run inside the Playwright Docker container. Steps in yellow use `if: always()`, so the merged report, artifact, Pages deploy and email happen even when tests fail. The workflow defines five jobs: `lint`, `test` (a matrix that produces the smoke and regression jobs), `report`, `deploy-report` and `notify`. Failed test jobs also upload their screenshots and traces as artifacts.
 
 ### Test tags
 
