@@ -34,10 +34,6 @@ export class InventoryPage {
     await this.product(name).getByRole('button', { name: 'Add to cart' }).click();
   }
 
-  async removeFromCart(name: string) {
-    await this.product(name).getByRole('button', { name: 'Remove' }).click();
-  }
-
   async sortBy(option: SortOption) {
     await this.page.getByTestId('product-sort-container').selectOption(option);
   }
