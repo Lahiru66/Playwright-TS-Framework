@@ -29,3 +29,9 @@ Detailed rules live in `.claude/rules/` (page objects, tests, data and config). 
 ## Restful-Booker API tests
 - `tests/booking.spec.ts` runs against https://restful-booker.herokuapp.com (`bookingApiUrl` in `config/environments/*.json`) through the `booker` fixture in `fixtures/booker.ts`, which deletes any booking a test created.
 - Optional env vars: `BOOKER_USERNAME` / `BOOKER_PASSWORD` (default to the API's public demo credentials).
+
+## Sauce Demo UI tests
+- `tests/shop.spec.ts` runs against https://www.saucedemo.com (`shopUrl` in `config/environments/*.json`, applied with `test.use({ baseURL: env.shopUrl })`) using the `LoginPage`, `InventoryPage`, `CartPage` and `CheckoutPage` fixtures.
+- `loggedInInventory` fixture logs in as the standard user for a fresh session. The cart lives in the browser's localStorage, so each test is isolated and parallel-safe.
+- Demo users in `test-data/shop.json` are the site's published public logins, not real credentials.
+- `playwright.config.ts` sets `testIdAttribute: 'data-test'` because Sauce Demo uses `data-test` attributes.

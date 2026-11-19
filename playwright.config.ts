@@ -29,6 +29,9 @@ export default defineConfig({
     /* Base URL to use in actions like `await page.goto('')`. */
     baseURL: env.baseUrl,
 
+    /* Sauce Demo (and many apps) mark test hooks with data-test instead of data-testid. */
+    testIdAttribute: 'data-test',
+
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
   },

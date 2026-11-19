@@ -1,0 +1,12 @@
+{
+  "users": {
+    "standard": { "username": "standard_user", "password": "secret_sauce" },
+    "lockedOut": { "username": "locked_out_user", "password": "secret_sauce" },
+    "wrongPassword": { "username": "standard_user", "password": "not_the_password" }
+  },
+  "products": {
+    "backpack": "Sauce Labs Backpack",
+    "bikeLight": "Sauce Labs Bike Light"
+  },
+  "customer": { "firstName": "Jane", "lastName": "Tester", "postalCode": "10100" }
+}
