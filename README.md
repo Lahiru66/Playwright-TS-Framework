@@ -9,7 +9,7 @@ A Playwright + TypeScript test automation framework covering **UI** and **API** 
 - Per-environment config (`dev`, `staging`) selected via `TEST_ENV`
 - JSON-driven test data, exported through `test-data/index.ts`
 - HTML and Allure reports
-- CI on GitHub Actions using the official Playwright container
+- CI on GitHub Actions running inside the official Playwright Docker container (`mcr.microsoft.com/playwright`), so browsers and system dependencies match the pinned Playwright version
 - Chromium-only, fully parallel runs
 
 ## Prerequisites
