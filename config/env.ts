@@ -5,6 +5,7 @@ export interface EnvConfig {
   name: string;
   baseUrl: string;
   apiUrl: string;
+  bookingApiUrl: string;
 }
 
 const envName = process.env.TEST_ENV ?? 'dev';

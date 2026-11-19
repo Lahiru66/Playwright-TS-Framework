@@ -24,3 +24,7 @@ Detailed rules live in `.claude/rules/` (page objects, tests, data and config). 
 ## Keep in sync
 - The CI container tag must match the `@playwright/test` version in `package.json`.
 - Generated output (`test-results/`, `playwright-report/`, `allure-results/`, `.playwright-mcp/`) is never committed.
+
+## Restful-Booker API tests
+- `tests/booking.spec.ts` runs against https://restful-booker.herokuapp.com (`bookingApiUrl` in `config/environments/*.json`) through the `booker` fixture in `fixtures/booker.ts`, which deletes any booking a test created.
+- Optional env vars: `BOOKER_USERNAME` / `BOOKER_PASSWORD` (default to the API's public demo credentials).

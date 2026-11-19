@@ -1,5 +1,6 @@
 {
   "name": "staging",
   "baseUrl": "https://example.com",
-  "apiUrl": "https://reqres.in/api"
+  "apiUrl": "https://reqres.in/api",
+  "bookingApiUrl": "https://restful-booker.herokuapp.com"
 }
