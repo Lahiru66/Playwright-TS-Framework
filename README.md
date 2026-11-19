@@ -95,7 +95,8 @@ npx allure open allure-report
 
 1. Runs the suite inside the `mcr.microsoft.com/playwright` container (the tag must match the `@playwright/test` version in `package.json`).
 2. Generates the Allure report and uploads it as the `allure-report` artifact (14-day retention).
-3. Sends an email summary of the run.
+3. On `main`, publishes the Allure report to GitHub Pages so it can be opened in the browser (see below).
+4. Sends an email summary of the run, including the report link.
 
 Required repository secrets for the email step: `SMTP_USERNAME`, `SMTP_PASSWORD`, `TO_EMAIL`.
 
@@ -110,17 +111,25 @@ flowchart TD
     E --> F[Run Playwright tests]
     F --> G[Generate Allure report]
     G --> H[Upload allure-report artifact]
-    H --> I[Send email summary]
+    H --> J[Deploy report to GitHub Pages - main only]
+    J --> I[Send email summary]
 
     F -. "if: always()" .-> G
     G -. "if: always()" .-> H
-    H -. "if: always()" .-> I
+    H -. "if: always()" .-> J
+    J -. "if: always()" .-> I
 
     classDef always fill:#fff4d6,stroke:#d9a400,color:#333;
-    class G,H,I always;
+    class G,H,I,J always;
 ```
 
-Steps in yellow use `if: always()`, so the report, artifact and email are produced even when tests fail.
+Steps in yellow use `if: always()`, so the report, artifact, Pages deploy and email happen even when tests fail. The workflow has three jobs: `test`, `deploy-report` and `notify`.
+
+### Viewing the Allure report
+
+- **In the browser (latest `main` run):** https://lahiru66.github.io/playwright-ts-framework/
+  One-time setup: repo **Settings → Pages → Source: GitHub Actions**. The report is public because the repo is public.
+- **Any run (including pull requests):** open the run under the **Actions** tab and download the `allure-report` artifact (kept 14 days), then `npx allure open <folder>`.
 
 ## License
 

@@ -4,6 +4,9 @@ on:
   push:
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -39,8 +42,39 @@ jobs:
           path: allure-report
           retention-days: 14
 
+  deploy-report:
+    # Publish the Allure report to GitHub Pages (main branch only)
+    needs: test
+    if: ${{ always() && github.ref == 'refs/heads/main' && needs.test.result != 'cancelled' && needs.test.result != 'skipped' }}
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Download Allure report
+        uses: actions/download-artifact@v4
+        with:
+          name: allure-report
+          path: allure-report
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: allure-report
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+  notify:
+    needs: [test, deploy-report]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
       - name: Send email notification
-        if: always()
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: smtp.gmail.com
@@ -50,11 +84,12 @@ jobs:
           password: ${{ secrets.SMTP_PASSWORD }}
           to: ${{ secrets.TO_EMAIL }}
           from: GitHub Actions <${{ secrets.SMTP_USERNAME }}>
-          subject: "Playwright tests ${{ job.status }}: ${{ github.repository }} @ ${{ github.ref_name }}"
+          subject: "Playwright tests ${{ needs.test.result }}: ${{ github.repository }} @ ${{ github.ref_name }}"
           body: |
-            Playwright test run finished with status: ${{ job.status }}
+            Playwright test run finished with status: ${{ needs.test.result }}
             Repository: ${{ github.repository }}
             Branch: ${{ github.ref_name }}
             Commit: ${{ github.sha }}
             Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-            The Allure report is attached to the run as the "allure-report" artifact.
+            Allure report (GitHub Pages, main only): https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
+            The Allure report is also attached to the run as the "allure-report" artifact.
