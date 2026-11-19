@@ -31,6 +31,8 @@ npx playwright install chromium
 ```bash
 npx playwright test                      # run everything
 npx playwright test tests/ui.spec.ts     # a single file
+npx playwright test --grep @smoke        # smoke suite only
+npx playwright test --grep @regression   # regression suite only
 npx playwright test --headed             # watch the browser
 npx playwright test --debug              # step through with the inspector
 ```
@@ -93,8 +95,8 @@ npx allure open allure-report
 
 `.github/workflows/playwright.yml` runs on every push and pull request. It:
 
-1. Runs the suite inside the `mcr.microsoft.com/playwright` container (the tag must match the `@playwright/test` version in `package.json`).
-2. Generates the Allure report and uploads it as the `allure-report` artifact (14-day retention).
+1. Runs the **smoke** and **regression** suites as two parallel jobs, each inside the `mcr.microsoft.com/playwright` container (the tag must match the `@playwright/test` version in `package.json`). A guard step fails the build if any test is missing a `@smoke` or `@regression` tag.
+2. Merges both suites' results into one Allure report and uploads it as the `allure-report` artifact (14-day retention).
 3. On `main`, publishes the Allure report to GitHub Pages so it can be opened in the browser (see below).
 4. Sends an email summary of the run, including the report link.
 
@@ -104,26 +106,43 @@ Required repository secrets for the email step: `SMTP_USERNAME`, `SMTP_PASSWORD`
 
 ```mermaid
 flowchart TD
-    A([Push / Pull request]) --> B[Start job in Playwright container]
-    B --> C[Checkout code]
-    C --> D[Setup Node.js and Java 17]
-    D --> E[npm ci]
-    E --> F[Run Playwright tests]
-    F --> G[Generate Allure report]
-    G --> H[Upload allure-report artifact]
+    A([Push / Pull request]) --> S
+    A --> R
+
+    subgraph S [smoke job - parallel]
+        direction TD
+        S1[Checkout and npm ci] --> S2[Tag guard] --> S3["Run @smoke tests"] --> S4[Upload allure-results-smoke]
+    end
+
+    subgraph R [regression job - parallel]
+        direction TD
+        R1[Checkout and npm ci] --> R3["Run @regression tests"] --> R4[Upload allure-results-regression]
+    end
+
+    S --> M[Report job: merge results and generate Allure report]
+    R --> M
+    M --> H[Upload allure-report artifact]
     H --> J[Deploy report to GitHub Pages - main only]
     J --> I[Send email summary]
 
-    F -. "if: always()" .-> G
-    G -. "if: always()" .-> H
-    H -. "if: always()" .-> J
-    J -. "if: always()" .-> I
-
     classDef always fill:#fff4d6,stroke:#d9a400,color:#333;
-    class G,H,I,J always;
+    class M,H,J,I always;
 ```
 
-Steps in yellow use `if: always()`, so the report, artifact, Pages deploy and email happen even when tests fail. The workflow has three jobs: `test`, `deploy-report` and `notify`.
+Both test jobs run inside the Playwright Docker container. Steps in yellow use `if: always()`, so the merged report, artifact, Pages deploy and email happen even when tests fail. The workflow defines four jobs: `test` (a matrix that produces the smoke and regression jobs), `report`, `deploy-report` and `notify`.
+
+### Test tags
+
+Every test carries exactly one tag, set with Playwright's `tag` option:
+
+```ts
+test('returns a token for valid credentials', { tag: '@smoke' }, async ({ booker }) => { ... });
+```
+
+- `@smoke`: fast, critical happy-path checks.
+- `@regression`: deeper, negative and edge-case checks.
+
+The two suites run in parallel in CI, so tests must own their data (create it, use it, clean it up) and never rely on data another test creates.
 
 ### Viewing the Allure report
 

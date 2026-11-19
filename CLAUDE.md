@@ -5,6 +5,7 @@ Playwright + TypeScript test framework (UI and API), with Allure reporting and a
 ## Commands
 - `npx playwright test` — run everything (chromium only)
 - `npx playwright test tests/ui.spec.ts` — one file; add `--headed` or `--debug` when investigating
+- `npx playwright test --grep @smoke` / `--grep @regression` — one suite (CI runs them as two parallel jobs)
 - `TEST_ENV=staging npx playwright test` — pick an environment (default `dev`; PowerShell: `$env:TEST_ENV='staging'`)
 - `npx playwright show-report` — HTML report
 - `npx allure generate allure-results --clean -o allure-report` — Allure report (needs Java)

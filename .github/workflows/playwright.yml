@@ -9,8 +9,49 @@ permissions:
 
 jobs:
   test:
+    # Runs the smoke and regression suites as two parallel jobs.
+    # Tests must be independent (own data, no shared state) so they are safe to run concurrently.
+    name: ${{ matrix.suite }}
     runs-on: ubuntu-latest
     container: mcr.microsoft.com/playwright:v1.65.1-jammy
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: [smoke, regression]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Ensure every test is tagged
+        if: matrix.suite == 'smoke'
+        run: |
+          OUT=$(npx playwright test --list --grep-invert "@smoke|@regression" 2>&1 || true)
+          echo "$OUT"
+          echo "$OUT" | grep -q "Total: 0 tests" || { echo "Found tests without @smoke or @regression tag"; exit 1; }
+
+      - name: Run ${{ matrix.suite }} tests
+        run: npx playwright test --grep "@${{ matrix.suite }}"
+
+      - name: Upload Allure results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results-${{ matrix.suite }}
+          path: allure-results
+          if-no-files-found: ignore
+          retention-days: 14
+
+  report:
+    # Merge the results of both suites into a single Allure report
+    needs: test
+    if: ${{ always() && needs.test.result != 'cancelled' && needs.test.result != 'skipped' }}
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
@@ -26,16 +67,17 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run Playwright tests
-        id: tests
-        run: npx playwright test
+      - name: Download Allure results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: allure-results-*
+          merge-multiple: true
+          path: allure-results
 
       - name: Generate Allure report
-        if: always()
         run: npx allure generate allure-results --clean -o allure-report
 
       - name: Upload Allure report
-        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: allure-report
@@ -44,8 +86,8 @@ jobs:
 
   deploy-report:
     # Publish the Allure report to GitHub Pages (main branch only)
-    needs: test
-    if: ${{ always() && github.ref == 'refs/heads/main' && needs.test.result != 'cancelled' && needs.test.result != 'skipped' }}
+    needs: report
+    if: ${{ always() && github.ref == 'refs/heads/main' && needs.report.result == 'success' }}
     runs-on: ubuntu-latest
     permissions:
       pages: write
@@ -70,7 +112,7 @@ jobs:
         uses: actions/deploy-pages@v4
 
   notify:
-    needs: [test, deploy-report]
+    needs: [test, report, deploy-report]
     if: always()
     runs-on: ubuntu-latest
     steps:
@@ -86,10 +128,10 @@ jobs:
           from: GitHub Actions <${{ secrets.SMTP_USERNAME }}>
           subject: "Playwright tests ${{ needs.test.result }}: ${{ github.repository }} @ ${{ github.ref_name }}"
           body: |
-            Playwright test run finished with status: ${{ needs.test.result }}
+            Playwright test run (smoke + regression) finished with status: ${{ needs.test.result }}
             Repository: ${{ github.repository }}
             Branch: ${{ github.ref_name }}
             Commit: ${{ github.sha }}
             Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
             Allure report (GitHub Pages, main only): https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
-            The Allure report is also attached to the run as the "allure-report" artifact.
+            The merged Allure report is also attached to the run as the "allure-report" artifact.
