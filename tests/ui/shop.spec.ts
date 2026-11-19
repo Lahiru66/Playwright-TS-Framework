@@ -1,11 +1,8 @@
-import { test, expect } from '../fixtures';
-import { env } from '../config/env';
-import { testData } from '../test-data';
+import { test, expect } from '../../fixtures';
+import { testData } from '../../test-data';
 
 const { users, products, customer } = testData.shop;
 
-// Sauce Demo lives on a different host than the default baseURL.
-test.use({ baseURL: env.shopUrl });
 
 test.describe('Sauce Demo: login', () => {
   test('logs in a standard user and shows the product list', { tag: '@smoke' }, async ({

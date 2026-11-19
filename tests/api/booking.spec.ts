@@ -1,5 +1,5 @@
-import { test, expect } from '../fixtures/booker';
-import { testData } from '../test-data';
+import { test, expect } from '../../fixtures/booker';
+import { testData } from '../../test-data';
 
 const { newBooking, updatedBooking, partialUpdate, nonExistentId } = testData.bookings;
 

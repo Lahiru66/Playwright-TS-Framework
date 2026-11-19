@@ -4,9 +4,7 @@ import path from 'path';
 export interface EnvConfig {
   name: string;
   baseUrl: string;
-  apiUrl: string;
   bookingApiUrl: string;
-  shopUrl: string;
 }
 
 const envName = process.env.TEST_ENV ?? 'dev';

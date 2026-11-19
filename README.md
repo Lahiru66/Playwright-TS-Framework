@@ -30,7 +30,9 @@ npx playwright install chromium
 
 ```bash
 npx playwright test                      # run everything
-npx playwright test tests/ui.spec.ts     # a single file
+npx playwright test tests/ui           # only the UI specs
+npx playwright test tests/api          # only the API specs
+npx playwright test tests/ui/shop.spec.ts  # a single file
 npx playwright test --grep @smoke        # smoke suite only
 npx playwright test --grep @regression   # regression suite only
 npx playwright test --headed             # watch the browser
@@ -65,12 +67,14 @@ npx allure open allure-report
 
 ```
 .
-├── tests/                  # *.spec.ts files (UI and API)
+├── tests/
+│   ├── ui/                 # UI specs (page objects via fixtures)
+│   └── api/                # API specs (request-based, own test data)
 ├── pages/                  # Page Object classes
 ├── fixtures/index.ts       # Extended `test` exposing page objects as fixtures
 ├── config/
 │   ├── env.ts              # Loads the active environment config
-│   └── environments/       # dev.json, staging.json (baseUrl, apiUrl)
+│   └── environments/       # dev.json, staging.json (baseUrl, bookingApiUrl)
 ├── test-data/              # JSON data, re-exported via index.ts
 ├── playwright.config.ts
 └── .github/workflows/      # CI pipeline
@@ -78,7 +82,7 @@ npx allure open allure-report
 
 ## Writing tests
 
-- UI specs import `test, expect` from `../fixtures`; API specs can use `@playwright/test` with the `request` fixture.
+- UI specs live in `tests/ui/` and import `test, expect` from `../../fixtures`; API specs live in `tests/api/` and use the `request` fixture (directly or through a client fixture such as `booker`).
 - Page objects take `page` in the constructor, expose user-intent methods and contain no assertions. Register each one in `fixtures/index.ts`.
 - Use `getByRole` / `getByLabel` / `getByText` locators first; avoid XPath.
 - No fixed sleeps (`waitForTimeout`). Rely on auto-waiting and web-first assertions.

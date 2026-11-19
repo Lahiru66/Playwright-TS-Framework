@@ -1,7 +1,7 @@
 # Page objects
 
 - One class per page or component in `pages/`, named `<Name>Page.ts`.
-- Constructor takes `private readonly page: Page` (see `pages/ExamplePage.ts`).
+- Constructor takes `private readonly page: Page` (see `pages/LoginPage.ts`).
 - Expose user-intent methods (`login(user)`), not raw locator plumbing.
 - Locator priority: `getByRole` > `getByLabel` / `getByText` > `getByTestId` > CSS. Avoid XPath and brittle nth-child chains.
 - Use relative paths in `goto()` (e.g. `'/'`); the host comes from `baseURL` in `playwright.config.ts`.

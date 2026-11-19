@@ -1,7 +1,5 @@
 {
   "name": "dev",
-  "baseUrl": "https://example.com",
-  "apiUrl": "https://reqres.in/api",
-  "bookingApiUrl": "https://restful-booker.herokuapp.com",
-  "shopUrl": "https://www.saucedemo.com"
+  "baseUrl": "https://www.saucedemo.com",
+  "bookingApiUrl": "https://restful-booker.herokuapp.com"
 }

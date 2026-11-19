@@ -1,5 +1,4 @@
 import { test as base } from '@playwright/test';
-import { ExamplePage } from '../pages/ExamplePage';
 import { LoginPage } from '../pages/LoginPage';
 import { InventoryPage } from '../pages/InventoryPage';
 import { CartPage } from '../pages/CartPage';
@@ -7,7 +6,6 @@ import { CheckoutPage } from '../pages/CheckoutPage';
 import { testData } from '../test-data';
 
 interface Fixtures {
-  examplePage: ExamplePage;
   loginPage: LoginPage;
   inventoryPage: InventoryPage;
   cartPage: CartPage;
@@ -17,9 +15,6 @@ interface Fixtures {
 }
 
 export const test = base.extend<Fixtures>({
-  examplePage: async ({ page }, use) => {
-    await use(new ExamplePage(page));
-  },
   loginPage: async ({ page }, use) => {
     await use(new LoginPage(page));
   },
